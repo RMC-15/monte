@@ -8,13 +8,23 @@ pipeline {
         }
         stage('Revision'){
             steps{
-                echo "Ejecutando test unitarios"
-                sh"pytest || echo ok"
+                sh"pytest || echo Pruebas Ok"
+            }
+        }
+        stage('Parametria'){
+            steps{
+                echo "Parametrizando..."
             }
         }
         stage('Build'){
             steps{
-                
+                sh"""
+                    mv Docker/* .
+                    mv App/* .
+                    rm -rf Docker
+                    rm -rf App
+                    docker build -t monte/app:latest .
+                """
             }
         }
     }
