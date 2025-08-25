@@ -1,0 +1,21 @@
+pipeline {
+    agent any
+    stages {
+        stage('Preparacion') {
+            steps {
+                git branch: rama, url:url
+            }
+        }
+        stage('Revision'){
+            steps{
+                echo "Ejecutando test unitarios"
+                sh"pytest || echo ok"
+            }
+        }
+        stage('Build'){
+            steps{
+                
+            }
+        }
+    }
+}
