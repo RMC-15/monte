@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: imagen
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: imagen
+  template:
+    metadata:
+      labels:
+        app: imagen
+    spec:
+      containers:
+      - name: imagen
+        image: rmc15/imagen:latest
+        ports:
+        - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: imagen-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: imagen
+  ports:
+  - port: 80
+    targetPort: 5000

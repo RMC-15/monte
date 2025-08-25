@@ -3,29 +3,58 @@ pipeline {
     stages {
         stage('Preparacion') {
             steps {
-                git branch: rama, url:url
+                script{
+                    env.image = ""
+                    env.version = "latest"
+                    env.stage = "develop"
+                    git branch: rama, url:url
+                    env. image = url.substring(url.lastIndexOf("/") + 1, url.lastIndexOf("."))
+                }
             }
         }
         stage('Revision'){
             steps{
-                sh"pytest || echo Pruebas Ok"
+                sh"pytest || echo Sin pruebas"
             }
         }
         stage('Parametria'){
             steps{
-                echo "Parametrizando..."
+                echo "Parametrización solo ilustrativa"
+                sh"sed -i 's/imagen/${image}/g' YML/*.yaml"
             }
         }
-        stage('Build'){
+        stage('Construccion'){
             steps{
-                sh"""
-                    mv Docker/* .
-                    mv App/* .
-                    rm -rf Docker
-                    rm -rf App
-                    docker build -t monte/app:latest .
-                """
+                script{
+                    sh"""
+                        mv Docker/* .
+                        mv App/* .
+                        mv YML/* .
+                        rm -rf Docker
+                        rm -rf App
+                        rm -rf YML
+                    """
+                    withCredentials([usernamePassword(credentialsId: 'dockercreds', usernameVariable: 'USR', passwordVariable: "PASS")]){
+                        sh'''
+                            docker build -t ${USR}/${image}:${version} .
+                            docker login -u "${USR}" -p "${PASS}"
+                            docker push ${stage}/${USR}/${image}:${version}
+                        '''
+                    }
+                    deleteDir()
+                }
             }
+        }
+        stage('Despliegue'){
+            steps{
+                sh'kubectl apply -f prueba.yaml || echo "Verifica cuenta de AWS"'
+            }
+        }
+    }
+    post{
+        failure{
+            deleteDir()
+            echo "Ocurrió un error, verifica logs"
         }
     }
 }
