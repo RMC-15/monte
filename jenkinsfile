@@ -14,7 +14,12 @@ pipeline {
         }
         stage('Revision'){
             steps{
-                sh"pytest || echo Sin pruebas"
+                echo "Revisión sólo ilustrativa (se puede incluir Sonarqube)"
+                sh"""
+                    pip install pytest
+                    cd App
+                    pytest || echo Sin pruebas
+                """
             }
         }
         stage('Parametria'){
